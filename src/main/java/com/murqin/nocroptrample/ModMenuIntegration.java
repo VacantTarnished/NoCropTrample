@@ -3,87 +3,118 @@ package com.murqin.nocroptrample;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import com.murqin.nocroptrample.config.ModConfig;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
 
-// Modern implementation (1.20+) using DrawContext
+/**
+ * Mod Menu integration for NoCropTrample configuration screen.
+ */
 public class ModMenuIntegration implements ModMenuApi {
-    
+
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return parent -> new NoCropTrampleConfigScreen(parent);
+        return NoCropTrampleConfigScreen::new;
     }
-    
+
+    /**
+     * Configuration screen for the NoCropTrample mod.
+     * <p>
+     * Provides a simple GUI to toggle player and mob trampling prevention.
+     * </p>
+     */
     public static class NoCropTrampleConfigScreen extends Screen {
         private final Screen parent;
-        private ButtonWidget playerButton;
-        private ButtonWidget mobButton;
-        
+        private Button playerButton;
+        private Button mobButton;
+
         public NoCropTrampleConfigScreen(Screen parent) {
-            super(Text.literal("NoCropTrample Config"));
+            super(Component.literal("NoCropTrample Config"));
             this.parent = parent;
         }
-        
+
         @Override
         protected void init() {
             int centerX = this.width / 2;
             int startY = this.height / 4;
-            
-            playerButton = ButtonWidget.builder(
+
+            playerButton = Button.builder(
                     getPlayerButtonText(),
-                    button -> {
-                        ModConfig.preventPlayerTrampling = !ModConfig.preventPlayerTrampling;
-                        ModConfig.save();
-                        button.setMessage(getPlayerButtonText());
-                    })
-                .dimensions(centerX - 100, startY, 200, 20)
-                .build();
-            this.addDrawableChild(playerButton);
-            
-            mobButton = ButtonWidget.builder(
+                    this::togglePlayerTrampling)
+                    .bounds(centerX - 100, startY, 200, 20)
+                    .build();
+            this.addRenderableWidget(playerButton);
+
+            mobButton = Button.builder(
                     getMobButtonText(),
-                    button -> {
-                        ModConfig.preventMobTrampling = !ModConfig.preventMobTrampling;
-                        ModConfig.save();
-                        button.setMessage(getMobButtonText());
-                    })
-                .dimensions(centerX - 100, startY + 25, 200, 20)
-                .build();
-            this.addDrawableChild(mobButton);
-            
-            this.addDrawableChild(ButtonWidget.builder(
-                    Text.translatable("gui.done"),
-                    button -> this.close())
-                .dimensions(centerX - 100, startY + 70, 200, 20)
-                .build());
+                    this::toggleMobTrampling)
+                    .bounds(centerX - 100, startY + 25, 200, 20)
+                    .build();
+            this.addRenderableWidget(mobButton);
+
+            this.addRenderableWidget(Button.builder(
+                    Component.translatable("gui.done"),
+                    button -> this.onClose())
+                    .bounds(centerX - 100, startY + 70, 200, 20)
+                    .build());
         }
-        
-        private Text getPlayerButtonText() {
-            return Text.literal("Player Trampling: ")
-                    .append(ModConfig.preventPlayerTrampling 
-                        ? Text.literal("§aPrevented") 
-                        : Text.literal("§cAllowed"));
+
+        /**
+         * Toggles the player trampling prevention setting.
+         *
+         * @param button the button that was clicked
+         */
+        private void togglePlayerTrampling(Button button) {
+            ModConfig.setPreventPlayerTrampling(!ModConfig.isPreventPlayerTrampling());
+            button.setMessage(getPlayerButtonText());
         }
-        
-        private Text getMobButtonText() {
-            return Text.literal("Mob Trampling: ")
-                    .append(ModConfig.preventMobTrampling 
-                        ? Text.literal("§aPrevented") 
-                        : Text.literal("§cAllowed"));
+
+        /**
+         * Toggles the mob trampling prevention setting.
+         *
+         * @param button the button that was clicked
+         */
+        private void toggleMobTrampling(Button button) {
+            ModConfig.setPreventMobTrampling(!ModConfig.isPreventMobTrampling());
+            button.setMessage(getMobButtonText());
         }
-        
+
+        /**
+         * Gets the display text for the player trampling button.
+         *
+         * @return formatted component with current state
+         */
+        private @NonNull Component getPlayerButtonText() {
+            return Component.literal("Player Trampling: ")
+                    .append(ModConfig.isPreventPlayerTrampling()
+                            ? Component.literal("§aPrevented")
+                            : Component.literal("§cAllowed"));
+        }
+
+        /**
+         * Gets the display text for the mob trampling button.
+         *
+         * @return formatted component with current state
+         */
+        private @NonNull Component getMobButtonText() {
+            return Component.literal("Mob Trampling: ")
+                    .append(ModConfig.isPreventMobTrampling()
+                            ? Component.literal("§aPrevented")
+                            : Component.literal("§cAllowed"));
+        }
+
         @Override
-        public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-            super.render(context, mouseX, mouseY, delta);
-            context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 20, 0xFFFFFF);
+        public void render(@NonNull GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+            super.render(guiGraphics, mouseX, mouseY, delta);
+            guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
         }
-        
+
         @Override
-        public void close() {
-            if (this.client != null) {
-                this.client.setScreen(this.parent);
+        public void onClose() {
+            if (this.minecraft != null) {
+                this.minecraft.setScreen(this.parent);
             }
         }
     }
