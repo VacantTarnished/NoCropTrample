@@ -47,7 +47,7 @@ public class ModMenuIntegration implements ModMenuApi {
                                 ModConfig.save();
                                 button.setMessage(getPlayerButtonText());
                             })
-                    .dimensions(centerX - 100, startY, 200, 20)
+                    .dimensions(centerX - 100, startY + 25, 200, 20)
                     .build();
             this.addDrawableChild(playerButton);
 
@@ -58,14 +58,14 @@ public class ModMenuIntegration implements ModMenuApi {
                                 ModConfig.save();
                                 button.setMessage(getMobButtonText());
                             })
-                    .dimensions(centerX - 100, startY + 25, 200, 20)
+                    .dimensions(centerX - 100, startY + 50, 200, 20)
                     .build();
             this.addDrawableChild(mobButton);
             
             this.addDrawableChild(ButtonWidget.builder(
                     Text.translatable("gui.done"),
                     button -> this.close())
-                .dimensions(centerX - 100, startY + 70, 200, 20)
+                .dimensions(centerX - 100, startY + 95, 200, 20)
                 .build());
         }
 
