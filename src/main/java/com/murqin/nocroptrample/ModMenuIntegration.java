@@ -57,7 +57,7 @@ public class ModMenuIntegration implements ModMenuApi {
                             this::toggleMobTrampling)
                     .bounds(centerX - 100, startY + 25, 200, 20)
                     .build();
-            this.addRenderableWidet(mobButton);
+            this.addRenderableWidget(mobButton);
 
             this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.done"),
@@ -108,7 +108,7 @@ public class ModMenuIntegration implements ModMenuApi {
                             : Component.literal("§cAllowed"));
         }
 
-        private Text getEmptyButtonText() {
+        private @NonNull Component getEmptyButtonText() {
             return Component.literal("Empty Trampling: ")
                     .append(ModConfig.isPreventEmptyTrampling()
                         ? Component.literal("§aPrevented")

@@ -4,12 +4,13 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.murqin.nocroptrample.NoCropTrampleMod;
+import com.murqin.nocroptrample.StateName;
 import com.murqin.nocroptrample.config.ModConfig;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
-import net.minecraft.server.command.CommandManager;
 import org.jspecify.annotations.NonNull;
 import net.minecraft.server.players.NameAndId;
 
@@ -32,8 +33,10 @@ public class NoCropTrampleCommand {
         private static final String PREFIX = "§6[NoCropTrample] ";
         private static final String PREFIX_ERROR = "§c[NoCropTrample] ";
         private static final String LABEL_STATUS = "§fStatus:";
+        private static final String LABEL_EMPTY = "§7Empty farmland trampling prevention: ";
         private static final String LABEL_PLAYER = "§7Player trampling prevention: ";
         private static final String LABEL_MOB = "§7Mob trampling prevention: ";
+        private static final String LABEL_ERROR = "§7Couldn't set unknown prevention type to: ";
         private static final String MSG_INVALID_STATE = "Invalid state! Use 'on' or 'off'.";
         private static final String MSG_CONFIG_RELOADED = "§aConfig reloaded!";
 
@@ -78,9 +81,10 @@ public class NoCropTrampleCommand {
                                         builder.suggest(STATE_OFF);
                                         return builder.buildFuture();
                                     })
-                                    .executes(context -> setState(context, StringArgumentType.getString(context,"state")))
-                            )
-                    )
+                                    .executes(context -> setState(
+                                            context,
+                                            StringArgumentType.getString(context,"state"),
+                                            StateName.EMPTY)));
         }
 
         /**
@@ -101,7 +105,7 @@ public class NoCropTrampleCommand {
                                                 .executes(context -> setState(
                                                                 context,
                                                                 StringArgumentType.getString(context, "state"),
-                                                                true)));
+                                                                StateName.PLAYER)));
         }
 
         /**
@@ -122,7 +126,7 @@ public class NoCropTrampleCommand {
                                                 .executes(context -> setState(
                                                                 context,
                                                                 StringArgumentType.getString(context, "state"),
-                                                                false)));
+                                                                StateName.MOB)));
         }
 
         /**
@@ -209,10 +213,10 @@ public class NoCropTrampleCommand {
          *
          * @param context  the command context
          * @param state    the state to set ("on" or "off")
-         * @param isPlayer true for player setting, false for mob setting
+         * @param stateName name of state to be set
          * @return command result code (1 for success, 0 for failure)
          */
-        private static int setState(CommandContext<CommandSourceStack> context, String state, StateType stateType) {
+        private static int setState(CommandContext<CommandSourceStack> context, String state, StateName stateName) {
                 CommandSourceStack source = context.getSource();
 
                 if (!state.equalsIgnoreCase(STATE_ON) && !state.equalsIgnoreCase(STATE_OFF)) {
@@ -223,12 +227,23 @@ public class NoCropTrampleCommand {
                 boolean newState = state.equalsIgnoreCase(STATE_ON);
                 String label;
 
-                if (isPlayer) {
+                switch (stateName) {
+                    case StateName.EMPTY -> {
+                        ModConfig.setPreventEmptyTrampling(newState);
+                        label = LABEL_EMPTY;
+                    }
+                    case StateName.PLAYER -> {
                         ModConfig.setPreventPlayerTrampling(newState);
                         label = LABEL_PLAYER;
-                } else {
+                    }
+                    case StateName.MOB -> {
                         ModConfig.setPreventMobTrampling(newState);
                         label = LABEL_MOB;
+                    }
+                    default -> {
+                        NoCropTrampleMod.LOGGER.error("Tried setting state of {}, which is not a valid state!", stateName);
+                        label = LABEL_ERROR;
+                    }
                 }
 
                 source.sendSuccess(
