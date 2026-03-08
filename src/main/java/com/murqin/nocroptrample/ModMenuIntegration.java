@@ -48,21 +48,21 @@ public class ModMenuIntegration implements ModMenuApi {
             Button playerButton = Button.builder(
                     getPlayerButtonText(),
                     this::togglePlayerTrampling)
-                    .bounds(centerX - 100, startY, 200, 20)
+                    .bounds(centerX - 100, startY + 25, 200, 20)
                     .build();
             this.addRenderableWidget(playerButton);
 
             Button mobButton = Button.builder(
                             getMobButtonText(),
                             this::toggleMobTrampling)
-                    .bounds(centerX - 100, startY + 25, 200, 20)
+                    .bounds(centerX - 100, startY + 50, 200, 20)
                     .build();
             this.addRenderableWidget(mobButton);
 
             this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.done"),
                 button -> this.onClose())
-                .bounds(centerX - 100, startY + 70, 200, 20)
+                .bounds(centerX - 100, startY + 95, 200, 20)
                 .build());
         }
 
