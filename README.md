@@ -9,6 +9,7 @@
 
 ## ✨ Features
 
+- **Prevent Empty Farmland Trampling:** Stop empty farmland trampling for whichever entities you have it enabled for (will always trample empty farmlands when set to off).
 - **Prevent Player Trampling:** Stop players from ruining crops by jumping on them.
 - **Prevent Mob Trampling:** Stop passive or hostile mobs from destroying farmland.
 - **Configurable:** Toggle protection for players and mobs independently via commands or config file.
@@ -30,6 +31,7 @@ The mod works out of the box with trampling prevention **enabled** for everyone.
 All commands require Operator (OP) permission.
 
 - `/nocroptrample status` - Check current protection status.
+- `/nocroptrample empty <on|off>` - Enable/Disable empty farmland trampling.
 - `/nocroptrample player <on|off>` - Enable/Disable player trampling on farmland.
 - `/nocroptrample mob <on|off>` - Enable/Disable mob trampling on farmland.
 - `/nocroptrample reload` - Reload configuration from file.
@@ -38,6 +40,7 @@ All commands require Operator (OP) permission.
 Located at `config/nocroptrample.json`.
 ```json
 {
+  "preventEmptyTrampling": true,
   "preventPlayerTrampling": true,
   "preventMobTrampling": true
 }
